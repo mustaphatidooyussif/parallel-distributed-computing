@@ -1,0 +1,4 @@
+1. Write c procedures (3).
+2. Latex report. 
+3. Write pseudocode using Algorithm2e.sty. 
+4. 
