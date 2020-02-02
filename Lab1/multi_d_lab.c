@@ -7,9 +7,20 @@ Authors: Mustapha Tidoo Yussif
 #include <stdlib.h> 
 #include <stdio.h> 
 
+//Function prototypes. 
 void procedure_one(int *, int []);
 void procedure_two(int *, int []);
 void procedure_three(int *, int []);
+
+
+struct cordinates{
+    int num_filled = 0; 
+    int n[16] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    /*int n0 = -1; int n1 = -1; int n2 = -1; int n3 = -1; 
+    int n4 = -1; int n5 = -1; int n6 = -1; int n7 = -1;
+    int n8 = -1; int n9 = -1; int n10 = -1; int n11 = -1;
+    int n12 = -1; int n13 = -1; int n14 = -1; int n15 = -1; */
+};
 
 int main(int argc, char *argv[]){
     //int array one 
@@ -41,9 +52,23 @@ int main(int argc, char *argv[]){
     free(arr3); free(dope_vector_3);
     free(arr4); free(dope_vector_4);
 
-    printf("Hello world");
-
     return 0; 
+}
+
+int *create_array(int K, int bounds[]){
+
+    //Check if K is in 1<= k <= 16
+    if (K < 1 || K > 16){
+        return;
+    }
+    //calculate size needed for memory allocation. 
+    int N = 1; 
+    for(int i = 0; i< K; i++){
+        N *= bounds[i];
+    }
+
+    //allocate space. 
+    return malloc(N*sizeof(int)); 
 }
 
 /*
@@ -52,7 +77,7 @@ procedure_one(int * arr, int dim[]): initializes the element of the array to zer
 void procedure_one(int * arr, int bounds[]){
     //Find number of arr bounds. 
     int num_bounds = sizeof(bounds)/sizeof(bounds[0]); 
-    int* d = (int *)calloc((num_bounds-1), sizeof(int));
+    int* d = (int *)calloc((num_bounds), sizeof(int));
 
     //Find arr capacity. 
     int N = 1; 
@@ -61,6 +86,11 @@ void procedure_one(int * arr, int bounds[]){
     }
 
     //Fill arr with zeroes. 
+
+    for(int k = 0; k < num_bounds; k++){
+        arr[k] = 0;
+    }
+
     
     printf("Hello world, procedure one %d", N);
 }
