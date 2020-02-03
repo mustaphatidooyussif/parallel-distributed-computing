@@ -25,39 +25,50 @@ struct cordinates{
 
 int main(int argc, char *argv[]){
     //int array one 
-    int arr1_bounds[2] = {10, 10}; 
-    int *arr1 = create_array(2, arr1_bounds);
+    printf("---------------------Array One--------------------\n");
+    int k_2 = 2;
+    int arr1_bounds[2] = {100, 100}; 
+    int *arr1 = create_array(k_2, arr1_bounds);
     procedure_one(arr1, arr1_bounds);
     procedure_two(arr1, arr1_bounds);
     procedure_three(arr1, arr1_bounds);
 
-   /* int arr1_dims[2] = {3, 3}; 
-    int *arr1 = (int *)malloc(arr1_dims[0] * arr1_dims[1] * sizeof(int));
-    int *dope_vector_1 = (int *)malloc(arr1_dims[0] * arr1_dims[1] * sizeof(int));
-    procedure_one(arr1, arr1_dims);
-
 
     //array two 
-    int arr2_dims[3] = {100, 100, 100};
-    int *arr2 = (int *)malloc(arr2_dims[0] * arr2_dims[1] * arr2_dims[2] * sizeof(int));
-    int *dope_vector_2 = (int *)malloc(arr2_dims[0] * arr2_dims[1] * arr2_dims[2] * sizeof(int));
-    
+    printf("---------------------Array Two--------------------\n");
+    int k_3 = 3;
+    int arr2_bounds[3] = {100, 100, 100};
+    int *arr2 = create_array(k_3, arr2_bounds);
+    procedure_one(arr2, arr2_bounds);
+    procedure_two(arr2, arr2_bounds);
+    procedure_three(arr2, arr2_bounds);
+
+
     //array three 
-    int arr3_dims[4] = {50, 50, 50, 50};
-    int *arr3 = (int *)malloc(arr3_dims[0] * arr3_dims[1] * arr3_dims[2] * arr3_dims[3] * sizeof(int));
-    int *dope_vector_3 = (int *)malloc(arr3_dims[0] * arr3_dims[1] * arr3_dims[2] * arr3_dims[3] * sizeof(int));
+    printf("---------------------Array Three--------------------\n");
+    int k_4 = 4;
+    int arr3_bounds[4] = {50, 50, 50, 50};
+    int *arr3 = create_array(k_4, arr3_bounds);
+    procedure_one(arr3, arr3_bounds);
+    procedure_two(arr3, arr3_bounds);
+    procedure_three(arr3, arr3_bounds);
+
 
     //array four 
-    int arr4_dims[5] = {20, 20, 20, 20, 20};
-    int *arr4 = (int *)malloc(arr4_dims[0] * arr4_dims[1] * arr4_dims[2] * arr4_dims[3] * arr4_dims[4] * sizeof(int));
-    int *dope_vector_4 = (int *)malloc(arr4_dims[0] * arr4_dims[1] * arr4_dims[2] * arr4_dims[3] * arr4_dims[4] * sizeof(int));
+    printf("---------------------Array Four--------------------\n");
+    int k_5 = 5; 
+    int arr4_bounds[5] = {20, 20, 20, 20, 20};
+    int *arr4 = create_array(k_5, arr4_bounds);
+    procedure_one(arr4, arr4_bounds);
+    procedure_two(arr4, arr4_bounds);
+    procedure_three(arr4, arr4_bounds);
 
-
+    
     //Free memories 
-    free(arr1); free(dope_vector_1); 
-    free(arr2); free(dope_vector_2); 
-    free(arr3); free(dope_vector_3);
-    free(arr4); free(dope_vector_4);*/
+    free(arr1);  
+    free(arr2);  
+    free(arr3); 
+    free(arr4); 
 
     return 0; 
 }
@@ -83,7 +94,7 @@ procedure_one(int * arr, int dim[]): initializes the element of the array to zer
 void procedure_one(int * arr, int bounds[]){
     //Find number of arr bounds. 
     int num_bounds = sizeof(bounds)/sizeof(bounds[0]); 
-    int* d = (int *)calloc((num_bounds), sizeof(int));
+    int* d = (int *)calloc((num_bounds), sizeof(int)); 
 
     //Find arr capacity. 
     int N = 1; 
@@ -97,6 +108,8 @@ void procedure_one(int * arr, int bounds[]){
         arr[k] = 0;
         k ++;
     }
+
+    free(d);
 }
 
 
@@ -155,5 +168,4 @@ void procedure_three(int * arr, int bounds[]){
         k++;
     }
     
-    printf("Hello world, procedure three");    
 }
