@@ -10,8 +10,10 @@ Authors: Mustapha Tidoo Yussif
 //Function prototypes. 
 void procedure_one(int *, int []);
 void procedure_two(int *, int []);
-void procedure_three(int *, int []);
+void procedure_three(int *, int [], int **dope);
 int *create_array(int, int[]);
+int **create_dope_vector(int K, int bounds[]);
+
 
 struct cordinates{
     int num_filled;
@@ -30,10 +32,10 @@ int main(int argc, char *argv[]){
     int k_2 = 2;
     int arr1_bounds[2] = {100, 100}; 
     int *arr1 = create_array(k_2, arr1_bounds);
-    int **dope_vec1 = single_index_to_cordinate(arr1_bounds);
+    int **dope_vec1 = create_dope_vector(k_2, arr1_bounds);
     procedure_one(arr1, arr1_bounds);
     procedure_two(arr1, arr1_bounds);
-    procedure_three(arr1, arr1_bounds);
+    procedure_three(arr1, arr1_bounds, dope_vec1);
 
 
     //array two 
@@ -41,10 +43,10 @@ int main(int argc, char *argv[]){
     int k_3 = 3;
     int arr2_bounds[3] = {100, 100, 100};
     int *arr2 = create_array(k_3, arr2_bounds);
-    int **dope_vec2 = single_index_to_cordinate(arr2_bounds);
+    int **dope_vec2 = create_dope_vector(k_3, arr2_bounds);
     procedure_one(arr2, arr2_bounds);
     procedure_two(arr2, arr2_bounds);
-    procedure_three(arr2, arr2_bounds);
+    procedure_three(arr2, arr2_bounds, dope_vec2);
 
 
     //array three 
@@ -52,10 +54,10 @@ int main(int argc, char *argv[]){
     int k_4 = 4;
     int arr3_bounds[4] = {50, 50, 50, 50};
     int *arr3 = create_array(k_4, arr3_bounds);
-    int **dope_vec3 = single_index_to_cordinate(arr3_bounds);
+    int **dope_vec3 = create_dope_vector(k_4, arr3_bounds);
     procedure_one(arr3, arr3_bounds);
     procedure_two(arr3, arr3_bounds);
-    procedure_three(arr3, arr3_bounds);
+    procedure_three(arr3, arr3_bounds, dope_vec3);
 
 
     //array four 
@@ -63,10 +65,10 @@ int main(int argc, char *argv[]){
     int k_5 = 5; 
     int arr4_bounds[5] = {20, 20, 20, 20, 20};
     int *arr4 = create_array(k_5, arr4_bounds);
-    int **dope_vec4 = single_index_to_cordinate(arr4_bounds);
+    int **dope_vec4 = create_dope_vector(k_5, arr4_bounds);
     procedure_one(arr4, arr4_bounds);
     procedure_two(arr4, arr4_bounds);
-    procedure_three(arr4, arr4_bounds);
+    procedure_three(arr4, arr4_bounds, dope_vec4);
 
     
     //Free memories 
@@ -121,18 +123,6 @@ void procedure_one(int * arr, int bounds[]){
     free(d);
 }
 
-int *single_index_to_cordinate(int index, int dimentionSizes[])
-{
-    int size = sizeof(dimentionSizes)/sizeof(dimentionSizes[0]);
-    int *result = malloc(size * sizeof(int));
-    for (int i = size; i >=0; i--)
-    {
-        result[i] = index % dimentionSizes[i];
-        index = index / dimentionSizes[i];
-    }
-
-    return result;
-}
 
 /*
 procedure_two(int * arr, int dim[]): sets 10% of the elements uniformly to 1s. 
@@ -164,7 +154,7 @@ procedure_three(int * arr, int dim[]): chooses 5% elements of the array and
 prints cordinate indices of the elemts and the values in a uniform random 
 fashion. 
 */
-void procedure_three(int * arr, int bounds[]){
+void procedure_three(int * arr, int bounds[], int **dope){
 
     int num_bounds = sizeof(bounds)/sizeof(bounds[0]);
     int N = 1; 
@@ -182,10 +172,19 @@ void procedure_three(int * arr, int bounds[]){
     int count = 0; 
     int prev_randint = 0;
 
-
+    printf("jjjjjjjjjjjjjjjjjjjjj%d", num_bounds);
+    
     while(k < portion){
         int num = (rand() % (upper - lower)) + lower;
         printf("The value = %d, Index = %d\n", arr[num], num);
+        int * ans = dope[num];
+
+        printf("(");
+        for(int m=0; m< num_bounds; m++){
+            printf("%d,", ans[m]);
+        }
+        printf(")\n");
+
         k++;
     }
     
