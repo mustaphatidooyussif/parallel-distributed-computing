@@ -5,10 +5,27 @@ int *SingleIndexToMulti(int index, int dimentionSizes[]);
 int **create_dope_vector(int k, int bounds[]);
 
 int main(){
-    int t[] = {2,3,4};
-    int k = 3;
+    int t[] = {100,100};
+    int k = 2;
+    int d = sizeof(t)/sizeof(t[0]);
+
+     int *ans = SingleIndexToMulti(1, t);
+     printf("(");
+     int i=0;
+     while(i < d){
+         printf("%d,", ans[i]);
+         i++;
+     }
+     printf(")\n");
+
+     /*
+     for(int i=0; i<d; i++){
+         printf("%d,", ans[i]);
+     }
+    printf(")\n");
+    
     int ** dope_vec1 = malloc((t[0]*t[1]*t[2]) * sizeof(int*));
-    create_dope_vector(k, t);  
+    create_dope_vector(k, t);  */
 
     return 0;
 }
@@ -21,7 +38,7 @@ int *SingleIndexToMulti(int index, int dimentionSizes[])
 {
     int size = sizeof(dimentionSizes)/sizeof(dimentionSizes[0]);
     int *result = malloc(size * sizeof(int));
-    for (int i = size; i >=0; i--)
+    for (int i = (size-1); i >=0; i--)
     {
         result[i] = index % dimentionSizes[i];
         index = index / dimentionSizes[i];

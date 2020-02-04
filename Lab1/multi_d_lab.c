@@ -4,27 +4,17 @@ Authors: Mustapha Tidoo Yussif
         Jones Dari
 */
 
-#include <stdlib.h> 
 #include <stdio.h> 
+#include <stdlib.h> 
 
 //Function prototypes. 
 void procedure_one(int *, int []);
 void procedure_two(int *, int []);
-void procedure_three(int *, int [], int **dope);
+void procedure_three(int *, int []);
 int *create_array(int, int[]);
 int **create_dope_vector(int K, int bounds[]);
 int *single_index_to_cordinate(int index, int dimentionSizes[]);
 
-struct cordinates{
-    int num_filled;
-    int n[16];
-
-    /*= {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-    int n0 = -1; int n1 = -1; int n2 = -1; int n3 = -1; 
-    int n4 = -1; int n5 = -1; int n6 = -1; int n7 = -1;
-    int n8 = -1; int n9 = -1; int n10 = -1; int n11 = -1;
-    int n12 = -1; int n13 = -1; int n14 = -1; int n15 = -1; */
-};
 
 int main(int argc, char *argv[]){
     //int array one 
@@ -32,10 +22,9 @@ int main(int argc, char *argv[]){
     int k_2 = 2;
     int arr1_bounds[2] = {100, 100}; 
     int *arr1 = create_array(k_2, arr1_bounds);
-    int **dope_vec1 = create_dope_vector(k_2, arr1_bounds);
     procedure_one(arr1, arr1_bounds);
     procedure_two(arr1, arr1_bounds);
-    procedure_three(arr1, arr1_bounds, dope_vec1);
+    procedure_three(arr1, arr1_bounds);
 
     
     //array two 
@@ -46,7 +35,7 @@ int main(int argc, char *argv[]){
     int **dope_vec2 = create_dope_vector(k_3, arr2_bounds);
     procedure_one(arr2, arr2_bounds);
     procedure_two(arr2, arr2_bounds);
-    procedure_three(arr2, arr2_bounds, dope_vec2);
+    procedure_three(arr2, arr2_bounds);
 
 
     //array three 
@@ -57,7 +46,7 @@ int main(int argc, char *argv[]){
     int **dope_vec3 = create_dope_vector(k_4, arr3_bounds);
     procedure_one(arr3, arr3_bounds);
     procedure_two(arr3, arr3_bounds);
-    procedure_three(arr3, arr3_bounds, dope_vec3);
+    procedure_three(arr3, arr3_bounds);
 
 
     //array four 
@@ -150,7 +139,7 @@ procedure_three(int * arr, int dim[]): chooses 5% elements of the array and
 prints cordinate indices of the elemts and the values in a uniform random 
 fashion. 
 */
-void procedure_three(int * arr, int bounds[], int **dope){
+void procedure_three(int * arr, int bounds[]){
 
     int num_bounds = sizeof(bounds)/sizeof(bounds[0]);
     int N = 1; 
@@ -170,10 +159,10 @@ void procedure_three(int * arr, int bounds[], int **dope){
 
 
     while(k < portion){
-        int num = (rand() % (upper - lower)) + lower;
-        printf("The value = %d, Index = %d\n", arr[num], num);
+        int index = (rand() % (upper - lower)) + lower;
+        printf("The value = %d, Index = %d\n", arr[index], index);
 
-        int * ans = single_index_to_cordinate(num_bounds, bounds);
+        int * ans = single_index_to_cordinate(index, bounds);
 
         printf("(");
         for(int m=0; m< num_bounds; m++){
@@ -194,7 +183,7 @@ int *single_index_to_cordinate(int index, int dimentionSizes[])
 {
     int size = sizeof(dimentionSizes)/sizeof(dimentionSizes[0]);
     int *result = malloc(size * sizeof(int));
-    for (int i = size; i >=0; i--)
+    for (int i = size-1; i >=0; i--)
     {
         result[i] = index % dimentionSizes[i];
         index = index / dimentionSizes[i];
