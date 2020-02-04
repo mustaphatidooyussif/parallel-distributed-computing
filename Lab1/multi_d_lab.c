@@ -13,7 +13,7 @@ void procedure_two(int *, int []);
 void procedure_three(int *, int [], int **dope);
 int *create_array(int, int[]);
 int **create_dope_vector(int K, int bounds[]);
-
+int *single_index_to_cordinate(int index, int dimentionSizes[]);
 
 struct cordinates{
     int num_filled;
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
     procedure_two(arr1, arr1_bounds);
     procedure_three(arr1, arr1_bounds, dope_vec1);
 
-
+    
     //array two 
     printf("---------------------Array Two--------------------\n");
     int k_3 = 3;
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
     free(arr2);  free(dope_vec2);
     free(arr3);  free(dope_vec3);
     free(arr4);  free(dope_vec4);
-
+    
     return 0; 
 }
 
@@ -116,10 +116,6 @@ void procedure_one(int * arr, int bounds[]){
         k ++;
     }
 
-    //////////////////////////////////////////////////
-
-
-    //////////////////////////////////////////////////
     free(d);
 }
 
@@ -172,18 +168,18 @@ void procedure_three(int * arr, int bounds[], int **dope){
     int count = 0; 
     int prev_randint = 0;
 
-    printf("jjjjjjjjjjjjjjjjjjjjj%d", num_bounds);
-    
+
     while(k < portion){
         int num = (rand() % (upper - lower)) + lower;
         printf("The value = %d, Index = %d\n", arr[num], num);
-        int * ans = dope[num];
+
+        int * ans = single_index_to_cordinate(num_bounds, bounds);
 
         printf("(");
         for(int m=0; m< num_bounds; m++){
             printf("%d,", ans[m]);
         }
-        printf(")\n");
+        printf(")\n\n");
 
         k++;
     }
