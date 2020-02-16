@@ -13,25 +13,34 @@ ulating very large matrices that are maintained in memory.
 #include <omp.h>
 #include <pthread.h> 
 #define NUM_THREADS 4
+#define BLOCK_SIZE 2
+#define CHUNK_SIZE 2
 
 /*Define functions prototypes. */
 void initializeMatrix(int **, int);
 void displayMatrix(int **, int);
 void naiveOMPTranspose(int **, int);
 void *diagonalThreadingTranspose(void *);
-void blockPthreadTranspose(int **); 
-void blockOMPTranspose(int **);
+void blockPthreadTranspose(int **, int); 
+void blockOMPTranspose(int **, int);
 int **allocate2DMatrixMemory(int);
 void swap(int **, int, int);
 
 
+struct thread_data{
+    int **matrix; 
+    int start;
+    int end;
+    int threadId;
+    int matrixSize;
+};
 
 struct thread_data threadDataArray[NUM_THREADS];
 
 int main(int argc, char *argv[]){
 
     /*N=128 or N = 1024 or N= 2048 or N = 4096*/
-    int N = 8; 
+    int N = 4; 
     //int N = 1024;  
     //int N = 2048; 
     //int N = 4096; 
@@ -48,24 +57,27 @@ int main(int argc, char *argv[]){
     displayMatrix(matrix, N);*/
 
     /*2. diagonal threading algorithm*/
+    /*
     pthread_t threads[NUM_THREADS];
-    int rc, t; 
+    int rc, t, start, end;
 
     for(t = 0; t < NUM_THREADS; t++){
 
-        /*
-        Parameter for the function to be run by 
-        the threads. 
-        */
+        
+        //Parameter for the function to be run by 
+        //the threads. 
+        
+        start = t * (N/NUM_THREADS);
+        end = (t + 1) * (N/NUM_THREADS) - 1;
         threadDataArray[t].threadId = t;
         threadDataArray[t].matrix = matrix;
         threadDataArray[t].matrixSize = N;
-        threadDataArray[t].start = t * (N/NUM_THREADS);
-        threadDataArray[t].end = (t + 1) * (N/NUM_THREADS) - 1;
+        threadDataArray[t].start = start;
+        threadDataArray[t].end = end;
 
-        /*
-        create the threads. 
-        */
+        
+        //create the threads. 
+        
         rc = pthread_create(&threads[t], NULL, diagonalThreadingTranspose, 
                 (void *) &threadDataArray[t]);
             
@@ -76,7 +88,20 @@ int main(int argc, char *argv[]){
 
     }
 
-    pthread_exit(NULL);
+    //Join all threads
+    for( t =0; t < NUM_THREADS; t++){
+        pthread_join(threads[t], NULL);
+    } */
+
+    //displayMatrix(matrix, N);
+
+    /*3. Block oriented OPen MP Transposition of matrices.*/
+    blockOMPTranspose(matrix, N);
+    printf("\nTranspose\n");
+    displayMatrix(matrix, N);
+
+    //pthread_exit(NULL);
+
 
     return (EXIT_SUCCESS);
 }
@@ -168,14 +193,6 @@ void swap(int **mat, int i, int j){
     mat[j][i] = temp; 
 }
 
-struct thread_data{
-    int **matrix; 
-    int start;
-    int end;
-    int threadId;
-    int matrixSize;
-};
-
 
 /*
 diagonalThreadingTranspose(void *): pthread diagonal threading. 
@@ -203,4 +220,34 @@ void *diagonalThreadingTranspose(void *threadData){
     }
 
     pthread_exit(NULL);
+}
+
+
+/*
+void blockOMPTranspose(int ** mat, int matSize):
+*/
+void blockOMPTranspose(int ** mat, int matSize){
+    size_t block, i, j;
+
+    #pragma omp parallel for private(i, j, block) schedule(static, CHUNK_SIZE)
+    for(block = 0; block < matSize; block += BLOCK_SIZE){
+        for(i = block; i<block + BLOCK_SIZE; ++i){
+            for(j= i+1; j<block + BLOCK_SIZE; ++j){
+                swap(mat, i, j);
+            }
+        }
+
+        for(i= block + BLOCK_SIZE; i< matSize; ++i){
+            for(j=block; j<block + BLOCK_SIZE; ++j){
+                swap(mat, i,j);
+            }
+        }         
+    }
+
+    for(size_t i=block; i< matSize; ++i){
+        for(size_t j=i+1; j< matSize; ++j){
+           swap(mat, i,j);
+        }  
+    }
+    
 }
