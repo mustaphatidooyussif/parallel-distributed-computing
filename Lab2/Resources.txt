@@ -1,0 +1,2 @@
+https://stackoverflow.com/questions/16737298/what-is-the-fastest-way-to-transpose-a-matrix-in-c
+https://stackoverflow.com/questions/37505137/openmp-transpose-matrix
