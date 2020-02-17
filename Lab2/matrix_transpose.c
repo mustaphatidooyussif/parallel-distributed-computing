@@ -21,7 +21,7 @@ void initializeMatrix(int **, int);
 void displayMatrix(int **, int);
 void naiveOMPTranspose(int **, int);
 void *diagonalThreadingTranspose(void *);
-void blockPthreadTranspose(int **, int); 
+void *blockPthreadTranspose(void *); 
 void blockOMPTranspose(int **, int);
 int **allocate2DMatrixMemory(int);
 void swap(int **, int, int);
@@ -100,8 +100,43 @@ int main(int argc, char *argv[]){
     printf("\nTranspose\n");
     displayMatrix(matrix, N);
 
-    //pthread_exit(NULL);
 
+    /*2. block oriented pthread algorithm*/
+    
+    pthread_t threads[NUM_THREADS];
+    int rc, t, start, end;
+
+    for(t = 0; t < NUM_THREADS; t++){
+
+        
+        //Parameter for the function to be run by 
+        //the threads. 
+        
+        start = t * (N/NUM_THREADS);
+        end = (t + 1) * (N/NUM_THREADS) - 1;
+        threadDataArray[t].threadId = t;
+        threadDataArray[t].matrix = matrix;
+        threadDataArray[t].matrixSize = N;
+        threadDataArray[t].start = start;
+        threadDataArray[t].end = end;
+
+        
+        //create the threads. 
+        
+        rc = pthread_create(&threads[t], NULL, blockPthreadTranspose, 
+                (void *) &threadDataArray[t]);
+            
+        if(rc){
+            fprintf(stderr, "Error: connot create threads\n");
+            exit(-1);
+        }
+
+    }
+
+    //Join all threads
+    for( t =0; t < NUM_THREADS; t++){
+        pthread_join(threads[t], NULL);
+    } 
 
     return (EXIT_SUCCESS);
 }
@@ -262,10 +297,28 @@ void blockOMPTranspose(int ** mat, int matSize){
     
 }
 
-void blockPthreadTranspose(int **, int){
+
+/*
+void blockPthreadTranspose(void *threadData):
+This implementation assumes that the matrix is a multiple of the 
+block size. 
+*/
+
+void *blockPthreadTranspose(void *threadData){
     size_t block, i, j;
 
-    //TODO: 1 check that matrix is a multiple of 
+    struct thread_data* data = (struct thread_data *) threadData;
+
+    int my_start, my_end, rank, matSize;
+    int **mat;
+
+    my_start = data->start;
+    my_end = data->end;
+    mat = data->matrix;
+    rank = data->threadId;
+    matSize = data->matrixSize;
+
+    //check that matrix is a multiple of 
     // the block size. 
 
     if(matSize % BLOCK_SIZE != 0){
@@ -273,7 +326,7 @@ void blockPthreadTranspose(int **, int){
         exit(-1);
     }
 
-    for(block = 0; block < matSize; block += BLOCK_SIZE){
+    for(block = my_start; block < my_end; block += BLOCK_SIZE){
         for(i = block; i<block + BLOCK_SIZE; i++){
             for(j= i+1; j<block + BLOCK_SIZE; j++){
                 swap(mat, i, j);
@@ -287,8 +340,8 @@ void blockPthreadTranspose(int **, int){
         }         
     }
 
-    for(size_t i=block; i< matSize; i++){
-        for(size_t j=i+1; j< matSize; j++){
+    for(i=block; i< matSize; i++){
+        for(j=i+1; j< matSize; j++){
            swap(mat, i,j);
         }  
     }
