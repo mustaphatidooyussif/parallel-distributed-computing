@@ -40,7 +40,7 @@ struct thread_data threadDataArray[NUM_THREADS];
 int main(int argc, char *argv[]){
 
     /*N=128 or N = 1024 or N= 2048 or N = 4096*/
-    int N = 4; 
+    int N = 8; 
     //int N = 1024;  
     //int N = 2048; 
     //int N = 4096; 
@@ -225,27 +225,70 @@ void *diagonalThreadingTranspose(void *threadData){
 
 /*
 void blockOMPTranspose(int ** mat, int matSize):
+This implementation assumes that the matrix is a multiple of the 
+block size. 
 */
 void blockOMPTranspose(int ** mat, int matSize){
     size_t block, i, j;
 
+    //TODO: 1 check that matrix is a multiple of 
+    // the block size. 
+
+    if(matSize % BLOCK_SIZE != 0){
+        fprintf(stderr, "Matrix must be a multiple of blocksize.\n");
+        exit(-1);
+    }
+
     #pragma omp parallel for private(i, j, block) schedule(static, CHUNK_SIZE)
     for(block = 0; block < matSize; block += BLOCK_SIZE){
-        for(i = block; i<block + BLOCK_SIZE; ++i){
-            for(j= i+1; j<block + BLOCK_SIZE; ++j){
+        for(i = block; i<block + BLOCK_SIZE; i++){
+            for(j= i+1; j<block + BLOCK_SIZE; j++){
                 swap(mat, i, j);
             }
         }
 
-        for(i= block + BLOCK_SIZE; i< matSize; ++i){
-            for(j=block; j<block + BLOCK_SIZE; ++j){
+        for(i= block + BLOCK_SIZE; i< matSize; i++){
+            for(j=block; j<block + BLOCK_SIZE; j++){
                 swap(mat, i,j);
             }
         }         
     }
 
-    for(size_t i=block; i< matSize; ++i){
-        for(size_t j=i+1; j< matSize; ++j){
+    for(size_t i=block; i< matSize; i++){
+        for(size_t j=i+1; j< matSize; j++){
+           swap(mat, i,j);
+        }  
+    }
+    
+}
+
+void blockPthreadTranspose(int **, int){
+    size_t block, i, j;
+
+    //TODO: 1 check that matrix is a multiple of 
+    // the block size. 
+
+    if(matSize % BLOCK_SIZE != 0){
+        fprintf(stderr, "Matrix must be a multiple of blocksize.\n");
+        exit(-1);
+    }
+
+    for(block = 0; block < matSize; block += BLOCK_SIZE){
+        for(i = block; i<block + BLOCK_SIZE; i++){
+            for(j= i+1; j<block + BLOCK_SIZE; j++){
+                swap(mat, i, j);
+            }
+        }
+
+        for(i= block + BLOCK_SIZE; i< matSize; i++){
+            for(j=block; j<block + BLOCK_SIZE; j++){
+                swap(mat, i,j);
+            }
+        }         
+    }
+
+    for(size_t i=block; i< matSize; i++){
+        for(size_t j=i+1; j< matSize; j++){
            swap(mat, i,j);
         }  
     }
