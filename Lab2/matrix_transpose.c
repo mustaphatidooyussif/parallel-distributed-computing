@@ -12,6 +12,7 @@ ulating very large matrices that are maintained in memory.
 #include <stdio.h> 
 #include <omp.h>
 #include <pthread.h> 
+#include <time.h> 
 #define NUM_THREADS 4
 #define BLOCK_SIZE 2
 #define CHUNK_SIZE 2
@@ -44,6 +45,7 @@ int main(int argc, char *argv[]){
     //int N = 1024;  
     //int N = 2048; 
     //int N = 4096; 
+    //time_t w_time;
 
     /*Create matrix, initiliaze and print it.*/
     int **matrix = allocate2DMatrixMemory(N);
@@ -52,7 +54,12 @@ int main(int argc, char *argv[]){
     displayMatrix(matrix, N);
 
     /*1. OpenMP naive threaded algoirthm*/
-    /*naiveOMPTranspose(matrix, N);
+    /*
+    w_time =  clock();
+    naiveOMPTranspose(matrix, N);
+    w_time = clock() - w_time;
+    naiveOMPTranspose(matrix, N);
+    printf("Time takeb by naiveOMPTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
     printf("\nTranspose\n");
     displayMatrix(matrix, N);*/
 
@@ -91,12 +98,16 @@ int main(int argc, char *argv[]){
     //Join all threads
     for( t =0; t < NUM_THREADS; t++){
         pthread_join(threads[t], NULL);
-    } */
+    } 
+    printf("Time takeb by diagonalThreadingTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
+    */
 
     //displayMatrix(matrix, N);
 
     /*3. Block oriented OPen MP Transposition of matrices.*/
+    //w_time = clock() - w_time;
     blockOMPTranspose(matrix, N);
+    //printf("Time takeb by blockOMPTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
     printf("\nTranspose\n");
     displayMatrix(matrix, N);
 
@@ -106,6 +117,7 @@ int main(int argc, char *argv[]){
     pthread_t threads[NUM_THREADS];
     int rc, t, start, end;
 
+    //w_time = clock() - w_time;
     for(t = 0; t < NUM_THREADS; t++){
 
         
@@ -137,6 +149,8 @@ int main(int argc, char *argv[]){
     for( t =0; t < NUM_THREADS; t++){
         pthread_join(threads[t], NULL);
     } 
+
+    printf("Time takeb by blockPthreadTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
 
     return (EXIT_SUCCESS);
 }
