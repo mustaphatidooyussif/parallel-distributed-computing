@@ -2,7 +2,7 @@
 #include <stdio.h> 
 #include <pthread.h> 
 
-#define N 8
+#define N 4
 #define NUM_THREADS 4
 #define BLOCK_SIZE 2
 #define CHUNK_SIZE 2
@@ -17,17 +17,65 @@ void *blockPthreadTranspose(void *);
 
 int **matrix;
 
+struct thread_data{
+    int start_row;
+    int start_col;
+};
+
+struct thread_data threadDataArray[NUM_THREADS];
+
 int main(int argc, char * argv[]){
     //int N = 8; 
     matrix = allocate2DMatrixMemory(N);
     initializeMatrix(matrix, N);
     displayMatrix(matrix, N);
 
+    /*
     //run_with_threads(NUM_THREADS, diagonalThreadingTranspose);
     run_with_threads(NUM_THREADS, blockPthreadTranspose);
+    */
+
+    pthread_t threads[NUM_THREADS];
+    int rc, t;
+
+    //w_time = clock() - w_time;
+    int b, c, row, col;
+    for(b=0; b < N; b +=BLOCK_SIZE){
+        for(c=0; c < N; c += BLOCK_SIZE){
+            printf("(%d, %d)\n", b, c);
+            /*
+            for(row = b; row < b + BLOCK_SIZE; row++){
+                for(col = c; col < c + BLOCK_SIZE; col++){
+                    printf("(%d, %d)\n", row, col);
+                }
+            }
+            */
+        }
+    }
+
+    /*
+    for(t = 0; t < nThreads; t++){        
+        //create the threads. 
+        
+        rc = pthread_create(&threads[t], NULL, start_routine, 
+                (void *) t);
+            
+        if(rc){
+            fprintf(stderr, "Error: connot create threads\n");
+            exit(-1);
+        }
+
+    }
+
+    //Join all threads
+    for( t =0; t < nThreads; t++){
+        pthread_join(threads[t], NULL);
+    } 
+
 
     printf("\n");
     displayMatrix(matrix, N);
+    */
     return (EXIT_SUCCESS);
 }
 

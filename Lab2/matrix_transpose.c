@@ -19,7 +19,7 @@ ulating very large matrices that are maintained in memory.
 
 
 /*N=128 or N = 1024 or N= 2048 or N = 4096*/
-#define N 8 
+#define N 4096
 #define N1  1024  
 #define N2 2048
 #define N3 4096
@@ -33,7 +33,7 @@ void *blockPthreadTranspose(void *);
 void blockOMPTranspose(int **, int);
 int **allocate2DMatrixMemory(int);
 void swap(int **, int, int);
-
+void basicTranspose(int **, int);
 
 struct thread_data{
     int **matrix; 
@@ -58,71 +58,62 @@ int main(int argc, char *argv[]){
     //displayMatrix(matrix, N);
 
     /*1. OpenMP naive threaded algoirthm*/
-    /*
+
     w_time =  clock();
     naiveOMPTranspose(matrix, N);
     w_time = clock() - w_time;
     naiveOMPTranspose(matrix, N);
     //printf("\nTranspose\n");
     //displayMatrix(matrix, N);
-    printf("Time takeb by naiveOMPTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
-    */
+    printf("Time takeb by naiveOMPTranspose(): %f s\n", 
+    ((double)w_time)/CLOCKS_PER_SEC);
+    
 
     /*2. diagonal threading algorithm*/
+    /*
+    w_time = clock();
     run_with_threads(NUM_THREADS, diagonalThreadingTranspose);
+    w_time = clock() - w_time;
 
-    printf("\n");
-    displayMatrix(matrix, N);
+    printf("Time taken by naiveOMPTranspose(): %f s\n", 
+        ((double)w_time)/CLOCKS_PER_SEC);
+    */
+
+    //printf("\n");
+    //displayMatrix(matrix, N);
 
     /*3. Block oriented OPen MP Transposition of matrices.*/
+    
     /*
-    //w_time = clock() - w_time;
+    w_time = clock();
     blockOMPTranspose(matrix, N);
-    //printf("Time takeb by blockOMPTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
-    printf("\nTranspose\n");
-    displayMatrix(matrix, N);
+    w_time = clock() - w_time;
+    printf("Time taken by blockOMPTranspose(): %f s\n",
+     ((double)w_time)/CLOCKS_PER_SEC);
+    //printf("\nTranspose\n");
+    //displayMatrix(matrix, N);
     */
 
     /*2. block oriented pthread algorithm*/
-    
     /*
-    pthread_t threads[NUM_THREADS];
-    int rc, t, start, end;
+    w_time = clock();
+    run_with_threads(NUM_THREADS, blockPthreadTranspose);
+    w_time = clock() - w_time;
 
-    //w_time = clock() - w_time;
-    for(t = 0; t < NUM_THREADS; t++){
+    printf("Time taken by blockPthreadTranspose(): %f s\n", 
+        ((double)w_time)/CLOCKS_PER_SEC);
 
-        
-        //Parameter for the function to be run by 
-        //the threads. 
-        
-        start = t * (N/NUM_THREADS);
-        end = (t + 1) * (N/NUM_THREADS) - 1;
-        threadDataArray[t].threadId = t;
-        threadDataArray[t].matrix = matrix;
-        threadDataArray[t].matrixSize = N;
-        threadDataArray[t].start = start;
-        threadDataArray[t].end = end;
+    */
 
-        
-        //create the threads. 
-        
-        rc = pthread_create(&threads[t], NULL, blockPthreadTranspose, 
-                (void *) &threadDataArray[t]);
-            
-        if(rc){
-            fprintf(stderr, "Error: connot create threads\n");
-            exit(-1);
-        }
-
-    }
-
-    //Join all threads
-    for( t =0; t < NUM_THREADS; t++){
-        pthread_join(threads[t], NULL);
-    } 
-
-    printf("Time takeb by blockPthreadTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
+    /*5. Basic matrix transpose.*/
+    /*
+    w_time = clock();
+    basicTranspose(matrix, N);
+    w_time = clock() - w_time;
+    printf("Time taken by basicTranspose(): %f s\n",
+     ((double)w_time)/CLOCKS_PER_SEC);
+    //printf("\nTranspose\n");
+    //displayMatrix(matrix, N);
     */
     return (EXIT_SUCCESS);
 }
@@ -261,6 +252,7 @@ This implementation assumes that the matrix is a multiple of the
 block size. 
 */
 
+/*
 void *blockPthreadTranspose(void *threadData){
     size_t block, i, j;
 
@@ -304,7 +296,7 @@ void *blockPthreadTranspose(void *threadData){
     }
     
 }
-
+*/
 
 void run_with_threads(int nThreads, void *(*start_routine)(void *)){
     pthread_t threads[nThreads];
@@ -351,4 +343,56 @@ void *diagonalThreadingTranspose(void *rank){
     }
 
     pthread_exit(NULL);
+}
+
+/*
+void basicPTranspose(int **mat, int matSize): Basic matrix transpose
+function with no parallelism.
+*/
+void basicTranspose(int **mat, int matSize){
+    int i, j;
+    for(i=0; i < matSize; i++){
+        for(j = i + 1; j < matSize; j++){
+            swap(mat, i, j);  //swap mat[i][j] and mat[j][i]
+        }
+    }
+}
+
+
+void *blockPthreadTranspose(void *rank){
+
+    int start, end, i, j, my_rank, block;
+    my_rank = (int)rank; 
+
+    start = my_rank * (N/NUM_THREADS);
+    end = (my_rank + 1) * (N/NUM_THREADS);
+
+    //check that matrix is a multiple of 
+    // the block size. 
+
+    if(N % BLOCK_SIZE != 0){
+        fprintf(stderr, "Matrix must be a multiple of blocksize.\n");
+        exit(-1);
+    }
+
+    for(block = start; block < end; block += BLOCK_SIZE){
+        for(i = block; i<block + BLOCK_SIZE; i++){
+            for(j= i+1; j<block + BLOCK_SIZE; j++){
+                swap(matrix, i, j);
+            }
+        }
+
+        for(i= block + BLOCK_SIZE; i< N; i++){
+            for(j=block; j<block + BLOCK_SIZE; j++){
+                swap(matrix, i,j);
+            }
+        }         
+    }
+
+    for(i=block; i< N; i++){
+        for(j=i+1; j< N; j++){
+           swap(matrix, i,j);
+        }  
+    }
+    
 }
