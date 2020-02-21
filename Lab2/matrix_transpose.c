@@ -17,6 +17,13 @@ ulating very large matrices that are maintained in memory.
 #define BLOCK_SIZE 2
 #define CHUNK_SIZE 2
 
+
+/*N=128 or N = 1024 or N= 2048 or N = 4096*/
+#define N 8 
+#define N1  1024  
+#define N2 2048
+#define N3 4096
+
 /*Define functions prototypes. */
 void initializeMatrix(int **, int);
 void displayMatrix(int **, int);
@@ -38,20 +45,17 @@ struct thread_data{
 
 struct thread_data threadDataArray[NUM_THREADS];
 
-int main(int argc, char *argv[]){
+int **matrix;
 
-    /*N=128 or N = 1024 or N= 2048 or N = 4096*/
-    int N = 8; 
-    //int N = 1024;  
-    //int N = 2048; 
-    //int N = 4096; 
-    //time_t w_time;
+int main(int argc, char *argv[]){
+ 
+    time_t w_time;
 
     /*Create matrix, initiliaze and print it.*/
-    int **matrix = allocate2DMatrixMemory(N);
+    matrix = allocate2DMatrixMemory(N);
     initializeMatrix(matrix, N);
-    printf("Matrix = \n");
-    displayMatrix(matrix, N);
+    //printf("Matrix = \n");
+    //displayMatrix(matrix, N);
 
     /*1. OpenMP naive threaded algoirthm*/
     /*
@@ -59,61 +63,29 @@ int main(int argc, char *argv[]){
     naiveOMPTranspose(matrix, N);
     w_time = clock() - w_time;
     naiveOMPTranspose(matrix, N);
+    //printf("\nTranspose\n");
+    //displayMatrix(matrix, N);
     printf("Time takeb by naiveOMPTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
-    printf("\nTranspose\n");
-    displayMatrix(matrix, N);*/
-
-    /*2. diagonal threading algorithm*/
-    /*
-    pthread_t threads[NUM_THREADS];
-    int rc, t, start, end;
-
-    for(t = 0; t < NUM_THREADS; t++){
-
-        
-        //Parameter for the function to be run by 
-        //the threads. 
-        
-        start = t * (N/NUM_THREADS);
-        end = (t + 1) * (N/NUM_THREADS) - 1;
-        threadDataArray[t].threadId = t;
-        threadDataArray[t].matrix = matrix;
-        threadDataArray[t].matrixSize = N;
-        threadDataArray[t].start = start;
-        threadDataArray[t].end = end;
-
-        
-        //create the threads. 
-        
-        rc = pthread_create(&threads[t], NULL, diagonalThreadingTranspose, 
-                (void *) &threadDataArray[t]);
-            
-        if(rc){
-            fprintf(stderr, "Error: connot create threads\n");
-            exit(-1);
-        }
-
-    }
-
-    //Join all threads
-    for( t =0; t < NUM_THREADS; t++){
-        pthread_join(threads[t], NULL);
-    } 
-    printf("Time takeb by diagonalThreadingTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
     */
 
-    //displayMatrix(matrix, N);
+    /*2. diagonal threading algorithm*/
+    run_with_threads(NUM_THREADS, diagonalThreadingTranspose);
+
+    printf("\n");
+    displayMatrix(matrix, N);
 
     /*3. Block oriented OPen MP Transposition of matrices.*/
+    /*
     //w_time = clock() - w_time;
     blockOMPTranspose(matrix, N);
     //printf("Time takeb by blockOMPTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
     printf("\nTranspose\n");
     displayMatrix(matrix, N);
-
+    */
 
     /*2. block oriented pthread algorithm*/
     
+    /*
     pthread_t threads[NUM_THREADS];
     int rc, t, start, end;
 
@@ -151,7 +123,7 @@ int main(int argc, char *argv[]){
     } 
 
     printf("Time takeb by blockPthreadTranspose(): %f s\n", ((double)w_time)/CLOCKS_PER_SEC);
-
+    */
     return (EXIT_SUCCESS);
 }
 
@@ -244,35 +216,6 @@ void swap(int **mat, int i, int j){
 
 
 /*
-diagonalThreadingTranspose(void *): pthread diagonal threading. 
-This implementation uses SPMD deign pattern. 
-*/
-void *diagonalThreadingTranspose(void *threadData){
-
-    struct thread_data* data = (struct thread_data *) threadData;
-
-    int i, j, my_start, my_end, rank, matSize;
-    int **mat;
-
-    my_start = data->start;
-    my_end = data->end;
-    mat = data->matrix;
-    rank = data->threadId;
-    matSize = data->matrixSize;
-
-    printf("Thread =%d, start = %d, end= %d\n",rank, my_start, my_end);
-
-    for(i=my_start; i < my_end; i++){
-        for(j= i + 1; j < matSize; j ++){
-            swap(mat, i, j);
-        }
-    }
-
-    pthread_exit(NULL);
-}
-
-
-/*
 void blockOMPTranspose(int ** mat, int matSize):
 This implementation assumes that the matrix is a multiple of the 
 block size. 
@@ -360,4 +303,52 @@ void *blockPthreadTranspose(void *threadData){
         }  
     }
     
+}
+
+
+void run_with_threads(int nThreads, void *(*start_routine)(void *)){
+    pthread_t threads[nThreads];
+    int rc, t;
+
+    //w_time = clock() - w_time;
+    for(t = 0; t < nThreads; t++){        
+        //create the threads. 
+        
+        rc = pthread_create(&threads[t], NULL, start_routine, 
+                (void *) t);
+            
+        if(rc){
+            fprintf(stderr, "Error: connot create threads\n");
+            exit(-1);
+        }
+
+    }
+
+    //Join all threads
+    for( t =0; t < nThreads; t++){
+        pthread_join(threads[t], NULL);
+    } 
+}
+
+
+/*
+diagonalThreadingTranspose(void *): pthread diagonal threading. 
+This implementation uses SPMD deign pattern. 
+*/
+
+void *diagonalThreadingTranspose(void *rank){
+    int start, end, i, j, my_rank;
+    my_rank = (int)rank; 
+
+    start = my_rank * (N/NUM_THREADS);
+    end = (my_rank + 1) * (N/NUM_THREADS);
+
+
+    for(i = start; i < end; i++){
+        for(j= i + 1; j < N; j ++){
+            swap(matrix, i, j);
+        }
+    }
+
+    pthread_exit(NULL);
 }
