@@ -14,12 +14,14 @@ void swap(int **, int, int);
 void *diagonalThreadingTranspose(void *);
 void run_with_threads(int nThreads, void *(*start_routine)(void *));
 void *blockPthreadTranspose(void *); 
+void basicTranspose(int **, int);
 
 int **matrix;
 
 struct thread_data{
-    int start_row;
-    int start_col;
+    int row;
+    int col;
+    int rank;
 };
 
 struct thread_data threadDataArray[NUM_THREADS];
@@ -28,7 +30,7 @@ int main(int argc, char * argv[]){
     //int N = 8; 
     matrix = allocate2DMatrixMemory(N);
     initializeMatrix(matrix, N);
-    displayMatrix(matrix, N);
+    //displayMatrix(matrix, N);
 
     /*
     //run_with_threads(NUM_THREADS, diagonalThreadingTranspose);
@@ -39,10 +41,22 @@ int main(int argc, char * argv[]){
     int rc, t;
 
     //w_time = clock() - w_time;
+    t = 0;
     int b, c, row, col;
     for(b=0; b < N; b +=BLOCK_SIZE){
         for(c=0; c < N; c += BLOCK_SIZE){
-            printf("(%d, %d)\n", b, c);
+            threadDataArray[t].rank = t;
+            threadDataArray[t].row = b;
+            threadDataArray[t].col = c;
+            rc = pthread_create(&threads[t], NULL, blockPthreadTranspose, 
+                    (void *) &threadDataArray[t]);
+                
+            if(rc){
+                fprintf(stderr, "Error: connot create threads\n");
+                exit(-1);
+            }
+            printf("Thread =%d\n", t);
+            t++;
             /*
             for(row = b; row < b + BLOCK_SIZE; row++){
                 for(col = c; col < c + BLOCK_SIZE; col++){
@@ -52,7 +66,8 @@ int main(int argc, char * argv[]){
             */
         }
     }
-
+    //printf("\n");
+    //displayMatrix(matrix, N);
     /*
     for(t = 0; t < nThreads; t++){        
         //create the threads. 
@@ -190,38 +205,46 @@ block size.
 
 void *blockPthreadTranspose(void *rank){
 
-    int start, end, i, j, my_rank, block;
-    my_rank = (int)rank; 
+    int start_row, start_col, i, j;
 
-    start = my_rank * (N/NUM_THREADS);
-    end = (my_rank + 1) * (N/NUM_THREADS);
+    struct thread_data* data = (struct thread_data*)rank;
+    start_row = data->row;
+    start_col = data->col;
+    //my_rank = data->rank;
 
-    //check that matrix is a multiple of 
-    // the block size. 
-
-    if(N % BLOCK_SIZE != 0){
-        fprintf(stderr, "Matrix must be a multiple of blocksize.\n");
-        exit(-1);
-    }
-
-    for(block = start; block < end; block += BLOCK_SIZE){
-        for(i = block; i<block + BLOCK_SIZE; i++){
-            for(j= i+1; j<block + BLOCK_SIZE; j++){
-                swap(matrix, i, j);
-            }
+    int **local_matrix = allocate2DMatrixMemory(BLOCK_SIZE);
+    for(i=0; i < BLOCK_SIZE; i++){
+        for(j=0; j< BLOCK_SIZE; j++){
+            local_matrix[i][j] = matrix[start_row + i][start_col + j];
         }
-
-        for(i= block + BLOCK_SIZE; i< N; i++){
-            for(j=block; j<block + BLOCK_SIZE; j++){
-                swap(matrix, i,j);
-            }
-        }         
     }
 
-    for(i=block; i< N; i++){
-        for(j=i+1; j< N; j++){
-           swap(matrix, i,j);
-        }  
+    //printf("Block\n");
+    //displayMatrix(local_matrix, BLOCK_SIZE);
+    basicTranspose(local_matrix, BLOCK_SIZE); //transpose
+
+    //printf("\n");
+    //displayMatrix(local_matrix, BLOCK_SIZE);
+
+    for(i=0; i < BLOCK_SIZE; i++){
+        for(j=0; j< BLOCK_SIZE; j++){
+            matrix[start_row + i][start_col + j] = local_matrix[i][j] ;
+        }
     }
-    
+
+    free(local_matrix);
+}
+
+
+/*
+void basicPTranspose(int **mat, int matSize): Basic matrix transpose
+function with no parallelism.
+*/
+void basicTranspose(int **mat, int matSize){
+    int i, j;
+    for(i=0; i < matSize; i++){
+        for(j = i + 1; j < matSize; j++){
+            swap(mat, i, j);  //swap mat[i][j] and mat[j][i]
+        }
+    }
 }
