@@ -23,13 +23,6 @@ stop_words ={'be', 'he', 'same', 'before', 'we', 'was', 'as',
                'him', 'it', 'their', 'below', 'own', 'had', 'after', 
                'ourselves', 'into', 'doing', 'they', 'those', 'your',
                 'against', 'again', 'with', 'once', 'were', 'does', 'an'}
-def makeset():
-    #read and convert stop words to a set
-    #make sure the stop words file is in the same directory. 
-    with open("stop_words.txt", "r") as f:
-        words = [ i.strip().lower() for i in f.read().split()]
-            
-        return set(words)
 
 class MRWordCount(MRJob):
 
