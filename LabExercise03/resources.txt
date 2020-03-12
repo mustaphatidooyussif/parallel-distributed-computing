@@ -1,2 +1,3 @@
 https://mrjob.readthedocs.io/en/latest/guides/testing.html
 https://stackoverflow.com/questions/9302580/multiple-inputs-with-mrjob
+https://stackoverflow.com/questions/40870854/mapreduce-job-to-yield-top-10-values-using-pythons-mrjob
