@@ -1,0 +1,2 @@
+https://mrjob.readthedocs.io/en/latest/guides/testing.html
+https://stackoverflow.com/questions/9302580/multiple-inputs-with-mrjob
