@@ -27,7 +27,7 @@ class MRWordCount(MRJob):
         """
         super(MRWordCount, self).configure_args()
         self.add_file_arg(
-            "--stop-words", default = "def_stop_words.txt",
+            "--stop-words", 
             help = "specify the stop words file. "
         )
 

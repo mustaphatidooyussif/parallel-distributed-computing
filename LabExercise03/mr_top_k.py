@@ -5,19 +5,8 @@ from heapq import nlargest
 
 WORD_RE = re.compile(r"[\w']+")
 
-
 class MRTopK(MRJob):
-
-    def steps(self):
-        return [
-            MRStep(mapper_init = self.mapper_init,
-                   mapper=self.mapper_get_words,
-                   combiner = self.combiner_count_words,
-                   reducer=self.reducer_count_words),
-            MRStep(reducer=self.reducer_find_max_word)
-        ]
-
-        
+       
     def configure_args(self):
         """
         This method configures commandline 
@@ -28,11 +17,11 @@ class MRTopK(MRJob):
         """
         super(MRTopK, self).configure_args()
         self.add_passthru_arg(
-            "--top-k", default = 3,
+            "--top-k", 
             help = "specify the top k value. "
         )
         self.add_file_arg(
-            "--stop-words", default = "def_stop_words.txt",
+            "--stop-words", 
             help = "specify the stop words file. "
         )
 
@@ -47,6 +36,7 @@ class MRTopK(MRJob):
             words = [ i.strip().lower() for i in f.read().split()]
 
         self.stopwords_set = set(words)
+
 
     def mapper_get_words(self, _, line):
         """
@@ -84,18 +74,31 @@ class MRTopK(MRJob):
         yield None, (sum(counts), word)
 
     def reducer_find_max_word(self, _, word_count_pairs):
-        #each item of word_count_pair is (count, word)
-        #so yielding one results in key=count, value=word
-        yield None, word_count_pairs
+        """
+        each item of word_count_pair is (count, word)
+        so yielding one results in key=count, value=word
+        """
+
+        values = []
+        for val in word_count_pairs:
+            values.append(val)
         
-        for count_word in word_count_pairs:
-            top_k = nlargest(self.options.top_k, count_word)
+        top_k = nlargest(
+            int(self.options.top_k), values, key = lambda x: x[0]
+            )
 
-        for i in range(int(self.options.top_k)):
-            yield top_k
+        for word in top_k:
+            yield word 
 
-        #yield max(word_count_pairs)
 
+    def steps(self):
+        return [
+            MRStep(mapper_init = self.mapper_init,
+                   mapper=self.mapper_get_words,
+                   combiner = self.combiner_count_words,
+                   reducer=self.reducer_count_words),
+            MRStep(reducer=self.reducer_find_max_word)
+        ]
 
 if __name__=="__main__":
      MRTopK.run()
