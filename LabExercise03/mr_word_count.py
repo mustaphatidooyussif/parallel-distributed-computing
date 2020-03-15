@@ -6,8 +6,6 @@ Lab Exercise 03.
 from mrjob.job import MRJob 
 from mrjob.step import MRStep 
 import re 
-import os 
-import config  
 
 WORD_RE = re.compile(r"[\w']+")
 

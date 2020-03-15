@@ -73,20 +73,26 @@ class MRTopK(MRJob):
 
         yield None, (sum(counts), word)
 
-    def reducer_find_max_word(self, _, word_count_pairs):
+    def reducer_find_top_k(self, _, word_count_pairs):
         """
         each item of word_count_pair is (count, word)
-        so yielding one results in key=count, value=word
+        so yielding one results is (count, word). Append 
+        all word_count_pairs to a list, values. Heapify 
+        the list and keep only the top k values. Yield 
+        the top k values.
         """
 
+        #append all word_count_pairs to values
         values = []
         for val in word_count_pairs:
             values.append(val)
         
+        #heapify and keep only the top k values
         top_k = nlargest(
             int(self.options.top_k), values, key = lambda x: x[0]
             )
 
+        #yield the top k values. 
         for word in top_k:
             yield word 
 
@@ -97,7 +103,7 @@ class MRTopK(MRJob):
                    mapper=self.mapper_get_words,
                    combiner = self.combiner_count_words,
                    reducer=self.reducer_count_words),
-            MRStep(reducer=self.reducer_find_max_word)
+            MRStep(reducer=self.reducer_find_top_k)
         ]
 
 if __name__=="__main__":
